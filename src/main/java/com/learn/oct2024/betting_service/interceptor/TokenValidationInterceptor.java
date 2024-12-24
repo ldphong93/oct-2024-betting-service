@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -26,6 +28,15 @@ public class TokenValidationInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        //Check if preflight request
+        if (isPreflightRequest(request)) {
+            log.info("Preflight request received, bypass Authentication.");
+            return true;
+        }
+
+
+        String tok = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getHeader("Authorization");
+
         //validate token and get user's role
         log.info("Receive request to: " + request.getRequestURI());
         String token = request.getHeader("Authorization");
@@ -70,5 +81,10 @@ public class TokenValidationInterceptor implements HandlerInterceptor {
             log.info(e.getMessage());
             return List.of();
         }
+    }
+
+    private boolean isPreflightRequest(HttpServletRequest request) {
+        return "OPTIONS".equalsIgnoreCase(request.getMethod()) &&
+                request.getHeader("Access-Control-Request-Method") != null;
     }
 }

@@ -1,6 +1,5 @@
 package com.learn.oct2024.betting_service.service.Impl;
 
-import com.learn.oct2024.betting_service.exception.EntityNotFoundException;
 import com.learn.oct2024.betting_service.model.dto.BetRequest;
 import com.learn.oct2024.betting_service.model.dto.BetResponse;
 import com.learn.oct2024.betting_service.model.dto.FinalizeMatchRequest;
@@ -13,6 +12,7 @@ import com.learn.oct2024.common.model.dto.UserInfoResponse;
 import com.learn.oct2024.common.model.entity.BetDetail;
 import com.learn.oct2024.common.model.enums.MatchResult;
 import com.learn.oct2024.common.model.enums.UserAction;
+import com.learn.oct2024.common.model.exception.EntityNotFoundException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.search.SearchOptions;
 import lombok.extern.slf4j.Slf4j;
@@ -124,7 +124,10 @@ public class BettingServiceImpl implements BettingService {
         BetDetail savedBetDetails = betDetailRepository.save(betDetail);
 
         log.info("Betting request saved successfully." + savedBetDetails);
-        return ResponseEntity.ok(new BetResponse("Betting request saved successfully." + savedBetDetails));
+        return ResponseEntity.ok(BetResponse.builder()
+                .successful(true)
+                .message("Betting request saved successfully." + savedBetDetails)
+                .build());
     }
 
     private void adjustBalance(String userId, Integer amount) {
